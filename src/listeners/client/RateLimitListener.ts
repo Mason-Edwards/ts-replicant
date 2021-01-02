@@ -9,8 +9,7 @@ export default class RateLimitListener extends Listener {
         });
     }
 
-
-    public exec(): void{
-        console.log("Rate Limit has been hit!")
+    public exec(rateLimit :object): void{
+        console.log(rateLimit);
     }
 }

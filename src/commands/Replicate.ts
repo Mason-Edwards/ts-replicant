@@ -17,7 +17,7 @@ export default class Replicate extends Command{
                 content: "Replicate the tagged user",
                 usage: "replicate"
             },
-            cooldown: 1000*180
+            //cooldown: 1000*180
         });
     }
 
