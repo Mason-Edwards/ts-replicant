@@ -1,0 +1,1 @@
+del D:\\Discord\\TypeScript\\ts-replicant\\dist\\
