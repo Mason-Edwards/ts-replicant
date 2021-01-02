@@ -22,7 +22,7 @@ export default class Replicate extends Command{
     }
 
     // setAvatar being ratelimited or something? 
-    public exec(message: Message) {
+    public async exec(message: Message) {
         let mentions = message.mentions.members;
         
         if(mentions.size > 0)
@@ -35,48 +35,69 @@ export default class Replicate extends Command{
             // Set Nickname 
             if(target.nickname == null)
             {
-                console.log("Replicating Username: " + target.user.username);
-                const p = message.guild.me.setNickname(target.user.username);
-                p.catch((e) => {
-                    console.log("--------ERROR setNickname()--------");
+                try
+                {
+                    console.log("Replicating Username: " + target.user.username);
+                    await message.guild.me.setNickname(target.user.username);
+                }  
+                catch(e){
+                    console.log("\n\n--------ERROR setNickname()--------");
                     console.log(e);
                     console.log("-----------------------------------")
-                });
+
+                    await message.util.send("Cannot set nickname because of Discord API ratelimit")
+                };
             }
             else
             {
-                console.log("Replcating nickname: " + target.nickname);
-                const pGuildMember = message.guild.me.setNickname(target.nickname);
-                pGuildMember.catch((e) => {
-                    console.log("--------ERROR setNickname()--------");
+                try
+                {
+                    console.log("Replcating nickname: " + target.nickname);
+                    await message.guild.me.setNickname(target.nickname);
+                }
+                
+                catch(e) {
+                    console.log("\n\n--------ERROR setNickname()--------");
                     console.log(e);
                     console.log("-----------------------------------")
-                });
+                    await message.util.send("Cannot set nickname because of Discord API ratelimit")
+                };
             }
             
             // Set Avatar
-            let targetAvaURL = target.user.displayAvatarURL({format: "png"});
-            console.log("Replicating Avatar: " + targetAvaURL);
-            let pClientUser = this.client.user.setAvatar(targetAvaURL);
+            try
+            {
+                let targetAvaURL = target.user.displayAvatarURL({format: "png"});
+                console.log("Replicating Avatar: " + targetAvaURL);
+                await this.client.user.setAvatar(targetAvaURL);
+            }
             
-            pClientUser.catch((e)=> {
-                console.log("--------ERROR: setAvatar()--------")
+            
+            catch(e) {
+                console.log("\n\n--------ERROR: setAvatar()--------")
                 console.log(e);
                 console.log("----------------------------------")
-                console.log(e + "\n");
-            });
+                await message.util.send("Cannot set avatar because of Discord API ratelimit")
+            }
+            
+            
             
             // Copy users presence 
-            let targetAct = target.user.presence.status;
-            if (targetAct == "offline") targetAct = "invisible";
-      
-            console.log("Replicating status: " + targetAct)
-            let pPresence = this.client.user.setStatus(targetAct);
-            pPresence.catch((e) => {
-                console.log("--------ERROR: setStatus()--------");
+            try
+            {
+                let targetAct = target.user.presence.status;
+                if (targetAct == "offline") targetAct = "invisible";
+          
+                console.log("Replicating status: " + targetAct)
+                await this.client.user.setStatus(targetAct);
+            }
+            
+            catch(e) {
+                console.log("\n\n--------ERROR: setStatus()--------");
                 console.log(e);
                 console.log("----------------------------------");
-            });
+                await message.util.send("Cannot set nickname because of Discord API ratelimit")
+            }
 
             console.log("-----------------------------\n")
  
