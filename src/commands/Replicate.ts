@@ -18,7 +18,7 @@ export default class Replicate extends Command{
         });
     }
 
-    // setAvatar being ratelimited or something? 
+
     public async exec(message: Message) {
         let mentions = message.mentions.members;
 
@@ -93,6 +93,8 @@ export default class Replicate extends Command{
                 console.log("----------------------------------");
                 await message.util.send("Cannot set nickname because of Discord API ratelimit")
             }
+
+            // Copy user game activity? 
 
             console.log("-----------------------------\n")
  
