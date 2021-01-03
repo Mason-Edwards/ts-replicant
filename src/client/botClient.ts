@@ -3,21 +3,21 @@ import { User, Message } from "discord.js";
 import { join } from "path";
 import { prefix, owners } from "../config";
 
-declare module "discord-akairo"{
-    interface AkairoClient{
+declare module "discord-akairo" {
+    interface AkairoClient {
         commandHandler: CommandHandler;
         listenerHandler: ListenerHandler;
     }
 }
 
-interface BotOptions{
+interface BotOptions {
     token?: string;
     owners: string | string[];
 }
 
-export default class BotClient extends AkairoClient{
+export default class BotClient extends AkairoClient {
     public config: BotOptions;
-    
+
     public listenerHandler: ListenerHandler = new ListenerHandler(this, {
         directory: join(__dirname, "..", "listeners")
     });
@@ -30,15 +30,15 @@ export default class BotClient extends AkairoClient{
         commandUtilLifetime: 3e5,
     });
 
-    public constructor(config: BotOptions){
+    public constructor(config: BotOptions) {
         super({
             ownerID: config.owners
         });
-    
+
         this.config = config;
     }
 
-    private async _init(): Promise<void>{
+    private async _init(): Promise<void> {
         this.commandHandler.useListenerHandler(this.listenerHandler);
         this.listenerHandler.setEmitters({
             commandHandler: this.commandHandler,
@@ -54,5 +54,5 @@ export default class BotClient extends AkairoClient{
         await this._init();
         return this.login(this.config.token)
     }
-    
+
 }
