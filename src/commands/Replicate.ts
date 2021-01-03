@@ -5,9 +5,6 @@ import { PresenceStatusData } from "discord.js";
 
 
 export default class Replicate extends Command{
-    
-    
-    
     public constructor(){
         super("replicate", {
             aliases: ["replicate", 
@@ -24,7 +21,7 @@ export default class Replicate extends Command{
     // setAvatar being ratelimited or something? 
     public async exec(message: Message) {
         let mentions = message.mentions.members;
-        
+
         if(mentions.size > 0)
         {
             console.log("--------REPLICATING--------");
@@ -71,15 +68,13 @@ export default class Replicate extends Command{
                 console.log("Replicating Avatar: " + targetAvaURL);
                 await this.client.user.setAvatar(targetAvaURL);
             }
-            
-            
+        
             catch(e) {
                 console.log("\n\n--------ERROR: setAvatar()--------")
                 console.log(e);
                 console.log("----------------------------------")
                 await message.util.send("Cannot set avatar because of Discord API ratelimit")
             }
-            
             
             
             // Copy users presence 
