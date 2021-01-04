@@ -2,9 +2,6 @@ import { Command } from "discord-akairo";
 import { Message } from "discord.js";
 import { JsonDB } from "node-json-db";
 
-
-
-
 export default class Replicate extends Command {
     public constructor() {
         super("replicate", {
@@ -24,7 +21,6 @@ export default class Replicate extends Command {
         // Deletes the DB, so the db in new each time the method is run
         db.delete("msgLog");
 
-
         let lastMessageID = "";
         let messagesLeft = 0;
         let count = 1;
@@ -38,12 +34,10 @@ export default class Replicate extends Command {
             }, true);
 
             console.log(`${count} : ${key} : ${value}`);
-            // Get the last message ID so can fetch the next 50 messages later
             lastMessageID = value.id;
             count++;
         }
         do {
-            // Get 50 messages before the last message that was orignally fethched
             let messages = await message.channel.messages.fetch({ before: lastMessageID });
             messagesLeft = messages.size;
             messages = messages.filter(m => m.author.id == message.author.id);
@@ -60,18 +54,11 @@ export default class Replicate extends Command {
             }
             console.log(messages.size + " : " + messagesLeft);
         }
-
-        // Onces all the messages have been fetched, calling it again on the same last message ID seems to return 1,
-        // probably because fetch with before filter includes lastMessageID, so once there are no messages, it is just lastMessageID left hence
-        // messagesLeft returning 1.
-        // So this while loop keeps running until all the messages have been fetched
-        // because if messagesLeft is greater than 1, there are more messages to get.
         while (messagesLeft > 1);
     }
 
     public async exec(message: Message) {
         let mentions = message.mentions.members;
-
 
         if (mentions.size > 0) {
             console.log("--------REPLICATING--------");
