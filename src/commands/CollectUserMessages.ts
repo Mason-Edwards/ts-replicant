@@ -1,5 +1,4 @@
 import { Command } from "discord-akairo";
-import { MessageCollector } from "discord.js";
 import { Message } from "discord.js";
 import { JsonDB } from "node-json-db";
 
@@ -24,6 +23,7 @@ export default class CollectUserMessages extends Command {
         console.log("----------Collecting messages ---------")
 
         const db = new JsonDB("msgLog", true, true, "/");
+        db.delete("msgLog");
         let lastMessageID = "";
         let messagesLeft = 0;
 

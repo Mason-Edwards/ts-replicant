@@ -1,6 +1,7 @@
 import { Command } from "discord-akairo";
 import { Message } from "discord.js";
-import { PresenceStatusData } from "discord.js";
+import { JsonDB } from "node-json-db";
+
 
 
 
@@ -18,9 +19,59 @@ export default class Replicate extends Command {
         });
     }
 
+    public async collectMessages(targetID, message) {
+        const db = new JsonDB("msgLog", true, true, "/");
+        // Deletes the DB, so the db in new each time the method is run
+        db.delete("msgLog");
+
+
+        let lastMessageID = "";
+        let messagesLeft = 0;
+        let count = 1;
+
+        let messages = await message.channel.messages.fetch({ limit: 50 });
+        messages = messages.filter(m => m.author.id == message.author.id);
+
+        for (let [key, value] of messages) {
+            db.push("/messageLog/messages[]", {
+                [count]: value.content
+            }, true);
+
+            console.log(`${count} : ${key} : ${value}`);
+            // Get the last message ID so can fetch the next 50 messages later
+            lastMessageID = value.id;
+            count++;
+        }
+        do {
+            // Get 50 messages before the last message that was orignally fethched
+            let messages = await message.channel.messages.fetch({ before: lastMessageID });
+            messagesLeft = messages.size;
+            messages = messages.filter(m => m.author.id == message.author.id);
+
+            for (let [key, value] of messages) {
+
+                db.push("/messageLog/messages[]", {
+                    [count]: value.content
+                }, true);
+
+                console.log(`${count} : ${key} : ${value}`);
+                lastMessageID = value.id;
+                count++;
+            }
+            console.log(messages.size + " : " + messagesLeft);
+        }
+
+        // Onces all the messages have been fetched, calling it again on the same last message ID seems to return 1,
+        // probably because fetch with before filter includes lastMessageID, so once there are no messages, it is just lastMessageID left hence
+        // messagesLeft returning 1.
+        // So this while loop keeps running until all the messages have been fetched
+        // because if messagesLeft is greater than 1, there are more messages to get.
+        while (messagesLeft > 1);
+    }
 
     public async exec(message: Message) {
         let mentions = message.mentions.members;
+
 
         if (mentions.size > 0) {
             console.log("--------REPLICATING--------");
@@ -91,6 +142,7 @@ export default class Replicate extends Command {
             try {
                 let targetGame = target.user.presence.activities;
                 console.log("Replicating Activity: " + targetGame);
+                // Still need to implement this
             }
 
             catch (e) {
@@ -100,9 +152,21 @@ export default class Replicate extends Command {
                 await message.util.send("Cannot set activity because of Discord API ratelimit")
             }
 
-            console.log("-----------------------------\n")
+            try {
+                // Get users messages
+                console.log(`Collecting ${target.user.username}'s messages`)
+                await this.collectMessages(target.id, message);
+            }
+            catch (e) {
+                console.log("\n\n--------ERROR: collectMessages()--------");
+                console.log(e);
+                console.log("----------------------------------");
+            }
 
+
+            await console.log("----------------------")
         }
+
         else {
             return message.util.send("Please tag a user to replicate or wait 1 min before replicating again...");
         }
