@@ -3,6 +3,9 @@ import { Message } from "discord.js";
 import { JsonDB } from "node-json-db";
 
 export default class Replicate extends Command {
+
+    out: string[] = [];
+
     public constructor() {
         super("replicate", {
             aliases: ["replicate",
@@ -23,19 +26,22 @@ export default class Replicate extends Command {
 
         let lastMessageID = "";
         let messagesLeft = 0;
-        let count = 1;
+        let msgCount = 1;
+        let maxLoop = 10;
+        let loopCount = 0;
 
         let messages = await message.channel.messages.fetch({ limit: 50 });
         messages = messages.filter(m => m.author.id == message.author.id);
 
         for (let [key, value] of messages) {
             db.push("/messageLog/messages[]", {
-                [count]: value.content
+                [msgCount]: value.content
             }, true);
 
-            console.log(`${count} : ${key} : ${value}`);
+            console.log(`${msgCount} : ${key} : ${value}`);
             lastMessageID = value.id;
-            count++;
+            this.out.push(value.content);
+            msgCount++;
         }
         do {
             let messages = await message.channel.messages.fetch({ before: lastMessageID });
@@ -45,16 +51,22 @@ export default class Replicate extends Command {
             for (let [key, value] of messages) {
 
                 db.push("/messageLog/messages[]", {
-                    [count]: value.content
+                    [msgCount]: value.content
                 }, true);
 
-                console.log(`${count} : ${key} : ${value}`);
+                console.log(`${msgCount} : ${key} : ${value}`);
                 lastMessageID = value.id;
-                count++;
+                this.out.push(value.content);
+                msgCount++;
             }
+            loopCount++;
             console.log(messages.size + " : " + messagesLeft);
         }
-        while (messagesLeft > 1);
+        while (messagesLeft > 1 /*&& loopCount! > maxLoop*/);
+    }
+
+    private delay(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     public async exec(message: Message) {
@@ -150,8 +162,13 @@ export default class Replicate extends Command {
                 console.log("----------------------------------");
             }
 
-
             await console.log("----------------------")
+
+            while (true) {
+                await this.delay(1000 * 15);
+                let index = Math.floor(Math.random() * this.out.length);
+                message.channel.send(this.out[index]);
+            }
         }
 
         else {
